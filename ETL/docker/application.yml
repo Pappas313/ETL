@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+
+  etl_mysql:
+    container_name: 'etl_mysql'
+    image: mysql:8.0.26
+    volumes:
+      - ./volumes/etl/mysql/:/var/lib/mysql/
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=etl_demo
+    ports:
+      - '3306:3306'
+    command: mysqld --lower_case_table_names=1 --skip-ssl --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
+
+  etl_neo4j:
+    container_name: 'etl_neo4j'
+    image: neo4j:4.2.11
+    volumes:
+      - ./volumes/etl/neo4j/:/data
+    environment:
+      - NEO4J_AUTH=none
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+
+  etl_mongodb:
+    container_name: 'etl_mongodb'
+    image: 'mongo:4.2.7'
+    volumes:
+      - ./volumes/etl/mongodb:/data/db
+    ports:
+      - '27017:27017'
+
+  etl_kafka:
+    container_name: 'etl_kafka'
+    image: confluentinc/cp-kafka:5.5.5
+    ports:
+      - '9092:9092'
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: etl_zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://etl_kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_HOST_NAME: etl_kafka
+
+  etl_zookeeper:
+    container_name: 'etl_zookeeper'
+    image: confluentinc/cp-zookeeper:5.5.5
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000

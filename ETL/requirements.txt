@@ -1,0 +1,11 @@
+APScheduler
+asyncio
+Faker
+fire
+mysql-connector-python
+kafka-python
+neo4j
+neomodel
+pymongo
+flask
+flask_restful
